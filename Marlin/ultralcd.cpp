@@ -18,8 +18,6 @@ int plaPreheatFanSpeed;
 int absPreheatHotendTemp;
 int absPreheatHPBTemp;
 int absPreheatFanSpeed;
-
-static float manual_feedrate[] = MANUAL_FEEDRATE;
 /* !Configuration settings */
 
 //Function pointer to menu functions.
@@ -379,9 +377,9 @@ static void lcd_move_x()
         encoderPosition = 0;
         #ifdef DELTA
         calculate_delta(current_position);
-        plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], current_position[E_AXIS], manual_feedrate[X_AXIS]/60, active_extruder);
+        plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], current_position[E_AXIS], 600, active_extruder);
         #else
-        plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], manual_feedrate[X_AXIS]/60, active_extruder);
+        plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], 600, active_extruder);
         #endif
         lcdDrawUpdate = 1;
     }
@@ -408,9 +406,9 @@ static void lcd_move_y()
         encoderPosition = 0;
         #ifdef DELTA
         calculate_delta(current_position);
-        plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], current_position[E_AXIS], manual_feedrate[Y_AXIS]/60, active_extruder);
+        plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], current_position[E_AXIS], 600, active_extruder);
         #else
-        plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], manual_feedrate[Y_AXIS]/60, active_extruder);
+        plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], 600, active_extruder);
         #endif
         lcdDrawUpdate = 1;
     }
@@ -437,9 +435,9 @@ static void lcd_move_z()
         encoderPosition = 0;
         #ifdef DELTA
         calculate_delta(current_position);
-        plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], current_position[E_AXIS], manual_feedrate[Z_AXIS]/60, active_extruder);
+        plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], current_position[E_AXIS], homing_feedrate[Z_AXIS]/60, active_extruder);
         #else
-        plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], manual_feedrate[Z_AXIS]/60, active_extruder);
+        plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], homing_feedrate[Z_AXIS]/60, active_extruder);
         #endif
         lcdDrawUpdate = 1;
     }
@@ -462,9 +460,9 @@ static void lcd_move_e()
         encoderPosition = 0;
         #ifdef DELTA
         calculate_delta(current_position);
-        plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], current_position[E_AXIS], manual_feedrate[E_AXIS]/60, active_extruder);
+        plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], current_position[E_AXIS], 20, active_extruder);
         #else
-        plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], manual_feedrate[E_AXIS]/60, active_extruder);
+        plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], 20, active_extruder);
         #endif
         lcdDrawUpdate = 1;
     }
@@ -484,12 +482,13 @@ static void lcd_move_menu_axis()
 {
     START_MENU();
     MENU_ITEM(back, MSG_MOVE_AXIS, lcd_move_menu);
-    MENU_ITEM(submenu, "Move X", lcd_move_x);
-    MENU_ITEM(submenu, "Move Y", lcd_move_y);
+    MENU_ITEM(submenu, MSG_MOVE_X, lcd_move_x);
+    MENU_ITEM(submenu, MSG_MOVE_Y, lcd_move_y);
+	// --Sisternicky: Took out Move Z from scale < 10 because there is no reason why Z should not be moved 10mm or more...
+	MENU_ITEM(submenu, MSG_MOVE_Z, lcd_move_z);
     if (move_menu_scale < 10.0)
     {
-        MENU_ITEM(submenu, "Move Z", lcd_move_z);
-        MENU_ITEM(submenu, "Extruder", lcd_move_e);
+        MENU_ITEM(submenu, MSG_MOVE_EXTRUDER, lcd_move_e);
     }
     END_MENU();
 }
@@ -514,10 +513,14 @@ static void lcd_move_menu()
 {
     START_MENU();
     MENU_ITEM(back, MSG_PREPARE, lcd_prepare_menu);
-    MENU_ITEM(submenu, "Move 10mm", lcd_move_menu_10mm);
-    MENU_ITEM(submenu, "Move 1mm", lcd_move_menu_1mm);
-    MENU_ITEM(submenu, "Move 0.1mm", lcd_move_menu_01mm);
-    //TODO:X,Y,Z,E
+	// --Sisternicky: Added localization defines for Move stuff...
+    MENU_ITEM(submenu, MSG_MOVE_10MM, lcd_move_menu_10mm);
+    MENU_ITEM(submenu, MSG_MOVE_1MM, lcd_move_menu_1mm);
+    MENU_ITEM(submenu, MSG_MOVE_0_1MM, lcd_move_menu_01mm);
+    // --Sisternicky: Added homing code for all separate axis
+	MENU_ITEM(gcode, MSG_HOME_X, PSTR("G28 X0"));
+	MENU_ITEM(gcode, MSG_HOME_X, PSTR("G28 Y0"));
+	MENU_ITEM(gcode, MSG_HOME_X, PSTR("G28 Z0"));
     END_MENU();
 }
 
